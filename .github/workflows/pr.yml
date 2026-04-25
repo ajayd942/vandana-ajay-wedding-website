@@ -19,6 +19,12 @@ jobs:
       - name: Build & verify
         run: mvn -B verify
 
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - uses: docker/setup-buildx-action@v3
+
       - name: Docker build sanity (no push)
         uses: docker/build-push-action@v6
         with:
