@@ -21,8 +21,6 @@ services:
     restart: unless-stopped
     mem_limit: 1g
     memswap_limit: 1g
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     command: [ "sh", "-c", "java -jar app.jar db migrate config.yml && java -jar app.jar server config.yml" ]
 
   db:
@@ -54,13 +52,3 @@ services:
     depends_on:
       - app
 
-  watchtower:
-    image: containrrr/watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_LABEL_ENABLE=true
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=60
-      - WATCHTOWER_INCLUDE_RESTARTING=true
