@@ -71,6 +71,25 @@ jobs:
       contents: read
       packages: read
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure ~/app exists on the VM
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: mkdir -p ~/app
+
+      - name: Sync docker-compose.yml to the VM
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_KEY }}
+          source: docker-compose.yml
+          target: ~/app/
+
       - name: SSH and roll the stack
         uses: appleboy/ssh-action@v1
         env:
