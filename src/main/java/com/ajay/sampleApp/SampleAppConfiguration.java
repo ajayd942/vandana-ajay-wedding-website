@@ -25,12 +25,12 @@ public class SampleAppConfiguration extends Configuration {
     }
 
     @Getter
-    @JsonProperty("redisHost")
-    private String redisHost;
-
-    @Getter
     @Setter
     @JsonProperty("adminSecret")
     private String adminSecret;
 
+    @Getter
+    @Setter
+    @JsonProperty("corsAllowedOrigins")
+    private String corsAllowedOrigins = "http://localhost:3000";
 }
