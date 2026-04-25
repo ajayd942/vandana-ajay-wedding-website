@@ -11,7 +11,6 @@ import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import redis.clients.jedis.Jedis;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,14 +24,12 @@ public class AdminResource {
     private final GuestDAO guestDAO;
     private final WeddingEventDAO weddingEventDAO;
     private final SampleAppConfiguration configuration;
-    private final Jedis jedis;
 
     @Inject
-    public AdminResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, SampleAppConfiguration configuration, Jedis jedis) {
+    public AdminResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, SampleAppConfiguration configuration) {
         this.guestDAO = guestDAO;
         this.weddingEventDAO = weddingEventDAO;
         this.configuration = configuration;
-        this.jedis = jedis;
     }
 
     private void checkAuth(String secret) {
@@ -47,7 +44,6 @@ public class AdminResource {
     public Response createEvent(@HeaderParam("X-Admin-Secret") String secret, WeddingEventEntity event) {
         checkAuth(secret);
         WeddingEventEntity savedEvent = weddingEventDAO.create(event);
-        jedis.del("wedding_events_cache");
         return Response.ok(savedEvent).build();
     }
 
@@ -66,7 +62,6 @@ public class AdminResource {
     public Response deleteEvent(@HeaderParam("X-Admin-Secret") String secret, @PathParam("id") UUID id) {
         checkAuth(secret);
         weddingEventDAO.delete(id);
-        jedis.del("wedding_events_cache");
         return Response.noContent().build();
     }
 
@@ -83,7 +78,6 @@ public class AdminResource {
                 weddingEventDAO.update(event);
             }
         }
-        jedis.del("wedding_events_cache");
         return Response.ok().build();
     }
 

@@ -21,7 +21,6 @@ database:
   # the JDBC URL
   url: jdbc:postgresql://${DB_HOST:-localhost}:${DB_PORT:-5432}/sample-app-2
 
-redisHost: redis://${REDIS_HOST:-127.0.0.1}:${REDIS_PORT:-6379}
+corsAllowedOrigins: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
 
-# Keep this secret and never commit the real value
 adminSecret: '${ADMIN_SECRET:-YOUR_ADMIN_SECRET}'

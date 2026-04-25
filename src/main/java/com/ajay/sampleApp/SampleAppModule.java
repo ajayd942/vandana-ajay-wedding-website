@@ -5,7 +5,6 @@ import com.ajay.sampleApp.core.logging.LoggingInterceptor;
 import com.ajay.sampleApp.db.GuestDAO;
 import com.ajay.sampleApp.db.UserDao;
 import com.ajay.sampleApp.db.WeddingEventDAO;
-import com.ajay.sampleApp.redis.UserRedisService;
 import com.ajay.sampleApp.resources.AdminResource;
 import com.ajay.sampleApp.resources.UserResource;
 import com.ajay.sampleApp.resources.WeddingResource;
@@ -16,7 +15,6 @@ import com.google.inject.Singleton;
 import com.google.inject.matcher.Matchers;
 import io.dropwizard.hibernate.HibernateBundle;
 import org.hibernate.SessionFactory;
-import redis.clients.jedis.Jedis;
 
 public class SampleAppModule extends AbstractModule {
 
@@ -36,8 +34,8 @@ public class SampleAppModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private UserDao getUserDao(SessionFactory sessionFactory, UserRedisService userRedisService){
-        return new UserDao(sessionFactory, userRedisService);
+    private UserDao getUserDao(SessionFactory sessionFactory){
+        return new UserDao(sessionFactory);
     }
 
     @Provides
@@ -66,26 +64,14 @@ public class SampleAppModule extends AbstractModule {
 
     @Provides
     @Singleton
-    private WeddingResource getWeddingResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, Jedis jedis, ObjectMapper mapper){
-        return new WeddingResource(guestDAO, weddingEventDAO, jedis, mapper);
+    private WeddingResource getWeddingResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, ObjectMapper mapper){
+        return new WeddingResource(guestDAO, weddingEventDAO, mapper);
     }
 
     @Provides
     @Singleton
-    private AdminResource getAdminResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, SampleAppConfiguration configuration, Jedis jedis){
-        return new AdminResource(guestDAO, weddingEventDAO, configuration, jedis);
-    }
-
-    @Provides
-    @Singleton
-    private Jedis getJedisClient(){
-        return new Jedis(config.getRedisHost());
-    }
-
-    @Provides
-    @Singleton
-    private UserRedisService getRedisCacheService(Jedis jedisClient){
-        return new UserRedisService(jedisClient);
+    private AdminResource getAdminResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, SampleAppConfiguration configuration){
+        return new AdminResource(guestDAO, weddingEventDAO, configuration);
     }
 
     @Override

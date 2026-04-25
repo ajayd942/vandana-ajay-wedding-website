@@ -6,15 +6,12 @@ import com.ajay.sampleApp.db.GuestDAO;
 import com.ajay.sampleApp.db.WeddingEventDAO;
 import com.ajay.sampleApp.db.entities.GuestEntity;
 import com.ajay.sampleApp.db.entities.WeddingEventEntity;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import io.dropwizard.hibernate.UnitOfWork;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import redis.clients.jedis.Jedis;
 
 import java.util.List;
 
@@ -26,14 +23,12 @@ public class WeddingResource {
 
     private final GuestDAO guestDAO;
     private final WeddingEventDAO weddingEventDAO;
-    private final Jedis jedis;
     private final ObjectMapper objectMapper;
 
     @Inject
-    public WeddingResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, Jedis jedis, ObjectMapper objectMapper) {
+    public WeddingResource(GuestDAO guestDAO, WeddingEventDAO weddingEventDAO, ObjectMapper objectMapper) {
         this.guestDAO = guestDAO;
         this.weddingEventDAO = weddingEventDAO;
-        this.jedis = jedis;
         this.objectMapper = objectMapper;
     }
 
@@ -58,28 +53,7 @@ public class WeddingResource {
     @Path("/events")
     @UnitOfWork
     public Response getEvents() {
-        String cacheKey = "wedding_events_cache";
-        String cachedEvents = jedis.get(cacheKey);
-
-        if (cachedEvents != null) {
-            try {
-                List<WeddingEventEntity> events = objectMapper.readValue(cachedEvents, new TypeReference<List<WeddingEventEntity>>() {});
-                return Response.ok(events).build();
-            } catch (JsonProcessingException e) {
-                // Log error and fallback to DB
-                e.printStackTrace();
-            }
-        }
-
-        // This DAO method is already updated to sort by displayOrder ASC
         List<WeddingEventEntity> events = weddingEventDAO.findAll();
-        try {
-            String jsonEvents = objectMapper.writeValueAsString(events);
-            jedis.setex(cacheKey, 24 * 60 * 60, jsonEvents); // 24 hours TTL
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
         return Response.ok(events).build();
     }
 }
